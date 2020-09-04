@@ -98,12 +98,11 @@ async function assertRenderEquals(doc: PP.Doc, text: string) {
 }
 
 class StringWriter implements Deno.Writer {
+  decoder = new TextDecoder();
   str = "";
 
   write(p: Uint8Array): Promise<number> {
-    const decoder = new TextDecoder();
-
-    this.str = this.str + decoder.decode(p);
+    this.str = this.str + this.decoder.decode(p);
     return Promise.resolve(p.length);
   }
 }

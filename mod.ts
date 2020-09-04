@@ -1,8 +1,17 @@
+/**
+ * The abstract class of documents.  This class is specialised into specific concrete classes to capture document composition.
+ */
 export abstract class Doc {
+  /**
+   * Equalivalent to `hcat([this, d])`.
+   */
   p(d: Doc): Doc {
     return new PlusDoc(this, d);
   }
 
+  /**
+   * Equalivalent to `hsep([this, d], sep)` with `sep` defaulting to a space (" ").
+   */
   pp(d: Doc, sep: Doc = space): Doc {
     return new PlusPlusDoc(this, sep, d);
   }
@@ -63,18 +72,36 @@ class NestDoc extends Doc {
   }
 }
 
+/**
+ * An empty document.  
+ */
 export const empty: Doc = new EmptyDoc();
 
+/**
+ * A document composed of "".
+ */
 export const blank: Doc = text("");
 
+/**
+ * A document composed of ",".
+ */
 export const comma: Doc = text(",");
 
+/**
+ * A document composed of " ".
+ */
 export const space: Doc = text(" ");
 
+/**
+ * A document composed of the literal string `t`.
+ */
 export function text(t: string): Doc {
   return new TextDoc(t);
 }
 
+/**
+ * A document composed of the literal number `n`.
+ */
 export function number(n: number): Doc {
   return new TextDoc("" + n);
 }
@@ -199,15 +226,4 @@ export function render(
   return renderp(doc, 0, 0, writer).then((_) =>
     writer.write(encoder.encode("\n"))
   ).then((_) => {});
-}
-
-class StringWriter implements Deno.Writer {
-  str = "";
-
-  write(p: Uint8Array): Promise<number> {
-    const decoder = new TextDecoder();
-
-    this.str = this.str + decoder.decode(p);
-    return Promise.resolve(p.length);
-  }
 }
