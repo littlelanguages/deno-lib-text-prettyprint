@@ -83,7 +83,10 @@ Deno.test("render nest", () => {
   assertRenderEquals(PP.nest(0, content), "hello\nworld\n");
   assertRenderEquals(PP.nest(2, content), "  hello\n  world\n");
 
-  assertRenderEquals(PP.text("bye").p(PP.nest(2, content)), "byehello\n   world\n");
+  assertRenderEquals(
+    PP.text("bye").p(PP.nest(2, content)),
+    "byehello\n   world\n",
+  );
 });
 
 async function assertRenderEquals(doc: PP.Doc, text: string) {
