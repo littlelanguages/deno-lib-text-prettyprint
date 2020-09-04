@@ -185,8 +185,12 @@ export function render(
       }
     } else if (d instanceof NestDoc) {
       const newLeftMargin = leftMargin + d.offset;
-      const spaces = (offset < newLeftMargin) ? " ".repeat(newLeftMargin - offset) : "";
-      return writer.write(encoder.encode(spaces)).then((_) => renderp(d.doc, newLeftMargin, Math.max(offset,newLeftMargin), writer));
+      const spaces = (offset < newLeftMargin)
+        ? " ".repeat(newLeftMargin - offset)
+        : "";
+      return writer.write(encoder.encode(spaces)).then((_) =>
+        renderp(d.doc, newLeftMargin, Math.max(offset, newLeftMargin), writer)
+      );
     } else {
       throw d;
     }
