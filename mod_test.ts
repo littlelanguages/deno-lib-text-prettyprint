@@ -50,6 +50,26 @@ Deno.test("render vcat", () => {
     ),
     "Hello\nWorld\nBye\nBye\nLove\n",
   );
+
+  assertRenderEquals(PP.vcat(["Hello"]), "Hello\n");
+  assertRenderEquals(
+    PP.vcat(["Hello", "World"]),
+    "Hello\nWorld\n",
+  );
+  assertRenderEquals(PP.vcat([PP.blank, "World"]), "\nWorld\n");
+
+  assertRenderEquals(
+    PP.vcat(
+      [
+        "Hello",
+        PP.text("World"),
+        "Bye",
+        PP.text("Bye"),
+        "Love",
+      ],
+    ),
+    "Hello\nWorld\nBye\nBye\nLove\n",
+  );
 });
 
 Deno.test("render hcat", () => {
@@ -57,6 +77,12 @@ Deno.test("render hcat", () => {
   assertRenderEquals(PP.hcat([PP.text("hello")]), "hello\n");
   assertRenderEquals(
     PP.hcat([PP.text("hello"), PP.text("world")]),
+    "helloworld\n",
+  );
+
+  assertRenderEquals(PP.hcat(["hello"]), "hello\n");
+  assertRenderEquals(
+    PP.hcat(["hello", "world"]),
     "helloworld\n",
   );
 });
@@ -75,10 +101,23 @@ Deno.test("render hsep", () => {
     PP.hsep([PP.text("hello"), PP.text("world")], PP.text("---")),
     "hello---world\n",
   );
+
+  assertRenderEquals(PP.hsep(["hello"]), "hello\n");
+  assertRenderEquals(
+    PP.hsep(["hello", "world"]),
+    "hello world\n",
+  );
+
+  assertRenderEquals(PP.hsep([], "---"), "\n");
+  assertRenderEquals(PP.hsep(["hello"], "---"), "hello\n");
+  assertRenderEquals(
+    PP.hsep([PP.text("hello"), "world"], "---"),
+    "hello---world\n",
+  );
 });
 
 Deno.test("render nest", () => {
-  const content = PP.vcat([PP.text("hello"), PP.text("world")]);
+  const content = PP.vcat(["hello", PP.text("world")]);
 
   assertRenderEquals(PP.nest(0, content), "hello\nworld\n");
   assertRenderEquals(PP.nest(2, content), "  hello\n  world\n");

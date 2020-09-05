@@ -5,15 +5,15 @@ export abstract class Doc {
   /**
    * Equalivalent to `hcat([this, d])`.
    */
-  p(d: Doc): Doc {
-    return new PlusDoc(this, d);
+  p(d: Doc | string): Doc {
+    return new PlusDoc(this, toDoc(d));
   }
 
   /**
    * Equalivalent to `hsep([this, d], sep)` with `sep` defaulting to a space (" ").
    */
-  pp(d: Doc, sep: Doc = space): Doc {
-    return new PlusPlusDoc(this, sep, d);
+  pp(d: Doc | string, sep: Doc | string = space): Doc {
+    return new PlusPlusDoc(this, toDoc(sep), toDoc(d));
   }
 }
 
@@ -106,45 +106,66 @@ export function number(n: number): Doc {
   return new TextDoc("" + n);
 }
 
-export function vcat(docs: Array<Doc>): Doc {
-  return new VerticalDoc(docs);
+function toDoc(doc: Doc | string): Doc {
+  return (doc instanceof Doc) ? doc : text(doc);
 }
 
-export function hsep(docs: Array<Doc>, sep: Doc = space): Doc {
+export function vcat(docs: Array<Doc | string>): Doc {
+  return new VerticalDoc(docs.map(toDoc));
+}
+
+export function hsep(
+  docs: Array<Doc | string>,
+  sep: Doc | string = space,
+): Doc {
   if (docs.length == 0) {
     return empty;
-  } else if (docs.length == 1) {
-    return docs[0];
   } else {
-    return docs.slice(1).reduce((a, b) => a.pp(b, sep), docs[0]);
+    const docDocs = docs.map(toDoc);
+
+    if (docDocs.length == 1) {
+      return docDocs[0];
+    } else {
+      return docDocs.slice(1).reduce((a, b) => a.pp(b, sep), docDocs[0]);
+    }
   }
 }
 
-export function hcat(docs: Array<Doc>): Doc {
+export function hcat(docs: Array<Doc | string>): Doc {
   if (docs.length == 0) {
     return empty;
-  } else if (docs.length == 1) {
-    return docs[0];
   } else {
-    return docs.slice(1).reduce((a, b) => a.p(b), docs[0]);
+    const docDocs = docs.map(toDoc);
+
+    if (docDocs.length == 1) {
+      return docDocs[0];
+    } else {
+      return docDocs.slice(1).reduce((a, b) => a.p(b), docDocs[0]);
+    }
   }
 }
 
-export function nest(offset: number, doc: Doc): Doc {
-  return new NestDoc(offset, doc);
+export function nest(offset: number, doc: Doc | string): Doc {
+  return new NestDoc(offset, toDoc(doc));
 }
 
-export function punctuate(separator: Doc, docs: Array<Doc>): Array<Doc> {
+export function punctuate(
+  separator: Doc | string,
+  docs: Array<Doc | string>,
+): Array<Doc> {
   const last = docs.length;
+  const docDocs = docs.map(toDoc);
+
   if (last == 0 || last == 1) {
-    return docs;
+    return docDocs;
   } else {
     const result = [];
 
+    const docSeparator = toDoc(separator);
     for (let lp = 0; lp < last - 1; lp += 1) {
-      result.push(docs[lp].p(separator));
+      result.push(docDocs[lp].p(docSeparator));
     }
-    result.push(docs[last - 1]);
+    result.push(docDocs[last - 1]);
 
     return result;
   }
