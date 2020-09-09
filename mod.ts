@@ -233,13 +233,7 @@ export function render(
         ).then((off) => renderp(d.r, leftMargin, off, writer));
       }
     } else if (d instanceof NestDoc) {
-      const newLeftMargin = leftMargin + d.offset;
-      const spaces = (offset < newLeftMargin)
-        ? " ".repeat(newLeftMargin - offset)
-        : "";
-      return writer.write(encoder.encode(spaces)).then((_) =>
-        renderp(d.doc, newLeftMargin, Math.max(offset, newLeftMargin), writer)
-      );
+      return renderp(d.doc, leftMargin + d.offset, offset, writer)
     } else {
       throw d;
     }
