@@ -199,6 +199,32 @@ export function render(
 ): Promise<void> {
   const encoder = new TextEncoder();
 
+  function renderVertically(
+    docs: Array<Doc>,
+    leftMargin: number,
+    offset: number,
+  ): Promise<number> {
+    let off = Promise.resolve(offset);
+    docs.filter((line) => !(line instanceof EmptyDoc)).forEach(
+      (line, idx) => {
+        off = off.then((o) => {
+          const spaces = (o < leftMargin) ? " ".repeat(leftMargin - o) : "";
+          return writer.write(encoder.encode(spaces)).then((_) =>
+            renderp(line, leftMargin, o, writer)
+          );
+        }).then((o) => {
+          if (idx != docs.length - 1) {
+            return writer.write(encoder.encode("\n")).then((_) => 0);
+          } else {
+            return o;
+          }
+        });
+      },
+    );
+
+    return off;
+  }
+
   function renderp(
     d: Doc,
     leftMargin: number,
@@ -212,29 +238,7 @@ export function render(
         offset + d.text.length
       );
     } else if (d instanceof VerticalDoc) {
-      if (d.docs.length == 0) {
-        return Promise.resolve(offset);
-      } else {
-        let off = Promise.resolve(offset);
-        d.docs.filter((line) => !(line instanceof EmptyDoc)).forEach(
-          (line, idx) => {
-            off = off.then((o) => {
-              const spaces = (o < leftMargin) ? " ".repeat(leftMargin - o) : "";
-              return writer.write(encoder.encode(spaces)).then((_) =>
-                renderp(line, leftMargin, o, writer)
-              );
-            }).then((o) => {
-              if (idx != d.docs.length - 1) {
-                return writer.write(encoder.encode("\n")).then((_) => 0);
-              } else {
-                return o;
-              }
-            });
-          },
-        );
-
-        return off;
-      }
+      return renderVertically(d.docs, leftMargin, offset);
     } else if (d instanceof PlusDoc) {
       return renderp(d.l, leftMargin, offset, writer).then((off) =>
         renderp(d.r, leftMargin, off, writer)
@@ -252,28 +256,10 @@ export function render(
         ).then((off) => renderp(d.r, leftMargin, off, writer));
       }
     } else if (d instanceof NestDoc) {
-      return renderp(d.doc, leftMargin + d.offset, offset, writer)
+      return renderp(d.doc, leftMargin + d.offset, offset, writer);
     } else if (d instanceof IndentDoc) {
-      let off = Promise.resolve(offset);
-      d.docs.filter((line) => !(line instanceof EmptyDoc)).forEach(
-        (line, idx) => {
-          off = off.then((o) => {
-            const spaces = (o < offset) ? " ".repeat(offset - o) : "";
-            return writer.write(encoder.encode(spaces)).then((_) =>
-              renderp(line, offset, o, writer)
-            );
-          }).then((o) => {
-            if (idx != d.docs.length - 1) {
-              return writer.write(encoder.encode("\n")).then((_) => 0);
-            } else {
-              return o;
-            }
-          });
-        },
-      );
-
-      return off;
-  } else {
+      return renderVertically(d.docs, offset, offset);
+    } else {
       throw d;
     }
   }
