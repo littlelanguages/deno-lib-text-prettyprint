@@ -145,6 +145,9 @@ export function hcat(docs: Array<Doc | string>): Doc {
   }
 }
 
+/**
+ *  Nests from the left margin by `offset` spaces.
+ */
 export function nest(offset: number, doc: Doc | string): Doc {
   return new NestDoc(offset, toDoc(doc));
 }
@@ -193,15 +196,13 @@ export function render(
       if (d.docs.length == 0) {
         return Promise.resolve(offset);
       } else {
-        const lm = Math.max(leftMargin, offset);
-
         let off = Promise.resolve(offset);
         d.docs.filter((line) => !(line instanceof EmptyDoc)).forEach(
           (line, idx) => {
             off = off.then((o) => {
-              const spaces = (o < lm) ? " ".repeat(lm - o) : "";
+              const spaces = (o < leftMargin) ? " ".repeat(leftMargin - o) : "";
               return writer.write(encoder.encode(spaces)).then((_) =>
-                renderp(line, lm, o, writer)
+                renderp(line, leftMargin, o, writer)
               );
             }).then((o) => {
               if (idx != d.docs.length - 1) {

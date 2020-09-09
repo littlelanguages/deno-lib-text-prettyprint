@@ -117,14 +117,22 @@ Deno.test("render hsep", () => {
 });
 
 Deno.test("render nest", () => {
-  const content = PP.vcat(["hello", PP.text("world")]);
+  const content = PP.vcat(["hello", "to", "the", PP.text("world")]);
 
-  assertRenderEquals(PP.nest(0, content), "hello\nworld\n");
-  assertRenderEquals(PP.nest(2, content), "  hello\n  world\n");
+  assertRenderEquals(PP.nest(0, content), "hello\nto\nthe\nworld\n");
+  assertRenderEquals(PP.nest(2, content), "  hello\n  to\n  the\n  world\n");
 
   assertRenderEquals(
-    PP.text("bye").p(PP.nest(2, content)),
-    "byehello\n   world\n",
+    PP.text("a").p(PP.nest(2, content)),
+    "a hello\n  to\n  the\n  world\n",
+  );
+  assertRenderEquals(
+    PP.text("ab").p(PP.nest(2, content)),
+    "abhello\n  to\n  the\n  world\n",
+  );
+  assertRenderEquals(
+    PP.text("abc").p(PP.nest(2, content)),
+    "abchello\n  to\n  the\n  world\n",
   );
 });
 
