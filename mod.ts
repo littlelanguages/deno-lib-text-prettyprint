@@ -28,6 +28,15 @@ class VerticalDoc extends Doc {
   }
 }
 
+class IndentDoc extends Doc {
+  docs: Array<Doc>;
+
+  constructor(docs: Array<Doc>) {
+    super();
+    this.docs = docs;
+  }
+}
+
 class TextDoc extends Doc {
   text: string;
 
@@ -110,8 +119,18 @@ function toDoc(doc: Doc | string): Doc {
   return (doc instanceof Doc) ? doc : text(doc);
 }
 
+/**
+ * Arranges `docs` to be rendered vertically with a newline at the end of each of its elements.  The left margin is respected.
+ */
 export function vcat(docs: Array<Doc | string>): Doc {
   return new VerticalDoc(docs.map(toDoc));
+}
+
+/**
+ * Arranges `docs` to be rendered vertically with a newline at the end of each of its elements.  The left margin is set to the offset of the current line which is applied to all elements in `docs`.
+ */
+export function indent(docs: Array<Doc | string>): Doc {
+  return new IndentDoc(docs.map(toDoc));
 }
 
 export function hsep(
@@ -234,7 +253,27 @@ export function render(
       }
     } else if (d instanceof NestDoc) {
       return renderp(d.doc, leftMargin + d.offset, offset, writer)
-    } else {
+    } else if (d instanceof IndentDoc) {
+      let off = Promise.resolve(offset);
+      d.docs.filter((line) => !(line instanceof EmptyDoc)).forEach(
+        (line, idx) => {
+          off = off.then((o) => {
+            const spaces = (o < offset) ? " ".repeat(offset - o) : "";
+            return writer.write(encoder.encode(spaces)).then((_) =>
+              renderp(line, offset, o, writer)
+            );
+          }).then((o) => {
+            if (idx != d.docs.length - 1) {
+              return writer.write(encoder.encode("\n")).then((_) => 0);
+            } else {
+              return o;
+            }
+          });
+        },
+      );
+
+      return off;
+  } else {
       throw d;
     }
   }

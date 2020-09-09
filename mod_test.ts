@@ -136,6 +136,13 @@ Deno.test("render nest", () => {
   );
 });
 
+Deno.test("render indent", () => {
+  const content = ["hello", "to", "the", PP.text("world")];
+
+  assertRenderEquals(PP.indent(content), "hello\nto\nthe\nworld\n");
+  assertRenderEquals(PP.hcat(["abc", PP.indent(content), "xyz"]), "abchello\n   to\n   the\n   worldxyz\n");
+});
+
 async function assertRenderEquals(doc: PP.Doc, text: string) {
   const sw = new StringWriter();
 
