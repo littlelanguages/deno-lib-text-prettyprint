@@ -134,6 +134,11 @@ Deno.test("render nest", () => {
     PP.text("abc").p(PP.nest(2, content)),
     "abchello\n  to\n  the\n  world\n",
   );
+
+  assertRenderEquals(
+    PP.text("abc").p(PP.nest(10, "xyz")),
+    "abc       xyz\n"
+  )
 });
 
 Deno.test("render indent", () => {

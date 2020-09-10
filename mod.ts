@@ -256,7 +256,14 @@ export function render(
         ).then((off) => renderp(d.r, leftMargin, off, writer));
       }
     } else if (d instanceof NestDoc) {
-      return renderp(d.doc, leftMargin + d.offset, offset, writer);
+      const newLeftMargin = leftMargin + d.offset;
+
+      const spaces = (offset < newLeftMargin)
+        ? " ".repeat(newLeftMargin - offset)
+        : "";
+      return writer.write(encoder.encode(spaces)).then((_) =>
+        renderp(d.doc, newLeftMargin, newLeftMargin, writer)
+      );
     } else if (d instanceof IndentDoc) {
       return renderVertically(d.docs, offset, offset);
     } else {
