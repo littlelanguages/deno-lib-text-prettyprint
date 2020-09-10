@@ -137,15 +137,37 @@ Deno.test("render nest", () => {
 
   assertRenderEquals(
     PP.text("abc").p(PP.nest(10, "xyz")),
-    "abc       xyz\n"
-  )
+    "abc       xyz\n",
+  );
+
+  const cmds = [
+    { name: "deno", help: "deno help" },
+    { name: "viz", help: "viz help" },
+    { name: "help", help: "help help" },
+  ];
+  const doc = PP.nest(
+    4,
+    PP.vcat(
+      cmds.flatMap((cmd) => PP.text(cmd.name).p(PP.nest(20, cmd.help))),
+    ),
+  );
+
+  assertRenderEquals(
+    doc,
+    "    deno                deno help\n" +
+      "    viz                 viz help\n" +
+      "    help                help help\n",
+  );
 });
 
 Deno.test("render indent", () => {
   const content = ["hello", "to", "the", PP.text("world")];
 
   assertRenderEquals(PP.indent(content), "hello\nto\nthe\nworld\n");
-  assertRenderEquals(PP.hcat(["abc", PP.indent(content), "xyz"]), "abchello\n   to\n   the\n   worldxyz\n");
+  assertRenderEquals(
+    PP.hcat(["abc", PP.indent(content), "xyz"]),
+    "abchello\n   to\n   the\n   worldxyz\n",
+  );
 });
 
 async function assertRenderEquals(doc: PP.Doc, text: string) {

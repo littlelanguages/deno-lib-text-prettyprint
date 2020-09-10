@@ -210,7 +210,7 @@ export function render(
         off = off.then((o) => {
           const spaces = (o < leftMargin) ? " ".repeat(leftMargin - o) : "";
           return writer.write(encoder.encode(spaces)).then((_) =>
-            renderp(line, leftMargin, o, writer)
+            renderp(line, leftMargin, o + spaces.length, writer)
           );
         }).then((o) => {
           if (idx != docs.length - 1) {
