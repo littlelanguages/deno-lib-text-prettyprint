@@ -218,7 +218,9 @@ export function join(
     while (true) {
       if (index == docs.length - 1) {
         if (index > 0) {
-          result.push(lastSeparator == undefined ? docSeparator : lastSeparator);
+          result.push(
+            lastSeparator == undefined ? docSeparator : lastSeparator,
+          );
         }
         result.push(docs[index]);
         break;
