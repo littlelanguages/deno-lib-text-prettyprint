@@ -193,6 +193,46 @@ export function punctuate(
   }
 }
 
+/**
+ * Joins `docs` together placing `separator` between each.  If `lastSeparator` is not undefined then `lastSeparator` is used instead of 
+ * `separator` in separating the final two elements of `docs`.
+ * 
+ * `lastSeparator` is useful when wanting to make elements readable.
+ * 
+ * ```ts
+ * join(['a', 'b', 'c'], ', ', ' and ') === 'a, b and c'
+ * ```
+ */
+export function join(
+  docs: Array<Doc | string>,
+  separator: Doc | string = space,
+  lastSeparator: Doc | string | undefined = undefined,
+): Doc {
+  if (docs.length == 0) {
+    return blank;
+  } else {
+    const result = [];
+    let index = 0;
+    const docSeparator = toDoc(separator);
+
+    while (true) {
+      if (index == docs.length - 1) {
+        if (index > 0) {
+          result.push(lastSeparator == undefined ? docSeparator : lastSeparator);
+        }
+        result.push(docs[index]);
+        break;
+      } else if (index > 0) {
+        result.push(docSeparator);
+      }
+      result.push(docs[index]);
+      index += 1;
+    }
+
+    return hcat(result);
+  }
+}
+
 export function render(
   doc: Doc,
   writer: Deno.Writer,
@@ -271,7 +311,5 @@ export function render(
     }
   }
 
-  return renderp(doc, 0, 0, writer).then((_) =>
-    writer.write(encoder.encode("\n"))
-  ).then((_) => {});
+  return renderp(doc, 0, 0, writer).then((_) => {});
 }
