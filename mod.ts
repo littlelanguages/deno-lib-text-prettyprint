@@ -144,8 +144,8 @@ export function hsep(
 
     if (docDocs.length === 1) {
       return docDocs[0];
-    } 
-    
+    }
+
     // oh the ES6 gorgeousness! https://stackoverflow.com/a/59411548/761388
     const [theFirst, ...allButTheFirst] = docDocs;
     return allButTheFirst.reduce((a, b) => a.p(b), theFirst);
