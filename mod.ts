@@ -137,12 +137,12 @@ export function hsep(
   docs: Array<Doc | string>,
   sep: Doc | string = space,
 ): Doc {
-  if (docs.length == 0) {
+  if (docs.length === 0) {
     return empty;
   } else {
     const docDocs = docs.map(toDoc);
 
-    if (docDocs.length == 1) {
+    if (docDocs.length === 1) {
       return docDocs[0];
     } else {
       return docDocs.slice(1).reduce((a, b) => a.pp(b, sep), docDocs[0]);
@@ -151,12 +151,12 @@ export function hsep(
 }
 
 export function hcat(docs: Array<Doc | string>): Doc {
-  if (docs.length == 0) {
+  if (docs.length === 0) {
     return empty;
   } else {
     const docDocs = docs.map(toDoc);
 
-    if (docDocs.length == 1) {
+    if (docDocs.length === 1) {
       return docDocs[0];
     } else {
       return docDocs.slice(1).reduce((a, b) => a.p(b), docDocs[0]);
@@ -178,7 +178,7 @@ export function punctuate(
   const last = docs.length;
   const docDocs = docs.map(toDoc);
 
-  if (last == 0 || last == 1) {
+  if (last === 0 || last === 1) {
     return docDocs;
   } else {
     const result = [];
@@ -208,7 +208,7 @@ export function join(
   separator: Doc | string = space,
   lastSeparator: Doc | string | undefined = undefined,
 ): Doc {
-  if (docs.length == 0) {
+  if (docs.length === 0) {
     return blank;
   } else {
     const result = [];
@@ -216,7 +216,7 @@ export function join(
     const docSeparator = toDoc(separator);
 
     while (true) {
-      if (index == docs.length - 1) {
+      if (index === docs.length - 1) {
         if (index > 0) {
           result.push(
             lastSeparator == undefined ? docSeparator : lastSeparator,
@@ -286,11 +286,11 @@ export function render(
         renderp(d.r, leftMargin, off, writer)
       );
     } else if (d instanceof PlusPlusDoc) {
-      if (d.l == empty && d.r == empty) {
+      if (d.l === empty && d.r === empty) {
         return Promise.resolve(offset);
-      } else if (d.l == empty) {
+      } else if (d.l === empty) {
         return renderp(d.r, leftMargin, offset, writer);
-      } else if (d.r == empty) {
+      } else if (d.r === empty) {
         return renderp(d.l, leftMargin, offset, writer);
       } else {
         return renderp(d.l, leftMargin, offset, writer).then((off) =>
