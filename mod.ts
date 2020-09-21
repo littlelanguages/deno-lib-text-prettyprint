@@ -142,11 +142,10 @@ export function hsep(
   } else {
     const docDocs = docs.map(toDoc);
 
-    if (docDocs.length === 1) {
-      return docDocs[0];
-    } else {
-      return docDocs.slice(1).reduce((a, b) => a.pp(b, sep), docDocs[0]);
-    }
+    return docDocs.length === 1
+      ? docDocs[0]
+        // check out the ES6 destructuring gorgeousness! ref: https://stackoverflow.com/a/59411548/761388
+      : [ , ...docDocs].reduce((a, b) => a.pp(b, sep), docDocs[0]);
   }
 }
 
