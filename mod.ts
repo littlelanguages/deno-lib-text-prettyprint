@@ -142,10 +142,13 @@ export function hsep(
   } else {
     const docDocs = docs.map(toDoc);
 
-    return docDocs.length === 1
-      ? docDocs[0]
-        // check out the ES6 destructuring gorgeousness! ref: https://stackoverflow.com/a/59411548/761388
-      : [ , ...docDocs].reduce((a, b) => a.pp(b, sep), docDocs[0]);
+    if (docDocs.length === 1) {
+      return docDocs[0];
+    } 
+    
+    // oh the ES6 gorgeousness! https://stackoverflow.com/a/59411548/761388
+    const [theFirst, ...allButTheFirst] = docDocs;
+    return allButTheFirst.reduce((a, b) => a.p(b), theFirst);
   }
 }
 
