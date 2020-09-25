@@ -43,6 +43,7 @@ Deno.test("render vcat", () => {
       [
         PP.text("Hello"),
         PP.text("World"),
+        PP.empty,
         PP.text("Bye"),
         PP.text("Bye"),
         PP.text("Love"),

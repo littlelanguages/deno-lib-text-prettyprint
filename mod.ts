@@ -249,7 +249,9 @@ export function render(
     offset: number,
   ): Promise<number> {
     let off = Promise.resolve(offset);
-    docs.filter((line) => !(line instanceof EmptyDoc)).forEach(
+    const newDocs = docs.filter((line) => !(line instanceof EmptyDoc));
+    
+    newDocs.forEach(
       (line, idx) => {
         off = off.then((o) => {
           const spaces = (o < leftMargin) ? " ".repeat(leftMargin - o) : "";
@@ -257,7 +259,7 @@ export function render(
             renderp(line, leftMargin, o + spaces.length, writer)
           );
         }).then((o) => {
-          if (idx != docs.length - 1) {
+          if (idx != newDocs.length - 1) {
             return writer.write(encoder.encode("\n")).then((_) => 0);
           } else {
             return o;
