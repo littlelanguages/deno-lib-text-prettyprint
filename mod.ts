@@ -250,7 +250,7 @@ export function render(
   ): Promise<number> {
     let off = Promise.resolve(offset);
     const newDocs = docs.filter((line) => !(line instanceof EmptyDoc));
-    
+
     newDocs.forEach(
       (line, idx) => {
         off = off.then((o) => {
