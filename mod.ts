@@ -82,6 +82,11 @@ class NestDoc extends Doc {
 }
 
 /**
+ * A document composed of the literal string `t`.
+ */
+export const text = (t: string): Doc => new TextDoc(t);
+
+/**
  * An empty document.  
  */
 export const empty: Doc = new EmptyDoc();
@@ -102,41 +107,29 @@ export const comma: Doc = text(",");
 export const space: Doc = text(" ");
 
 /**
- * A document composed of the literal string `t`.
- */
-export function text(t: string): Doc {
-  return new TextDoc(t);
-}
-
-/**
  * A document composed of the literal number `n`.
  */
-export function number(n: number): Doc {
-  return new TextDoc("" + n);
-}
+export const number = (n: number): Doc => text("" + n);
 
-function toDoc(doc: Doc | string): Doc {
-  return (doc instanceof Doc) ? doc : text(doc);
-}
+const toDoc = (doc: Doc | string): Doc =>
+  (doc instanceof Doc) ? doc : text(doc);
 
 /**
  * Arranges `docs` to be rendered vertically with a newline at the end of each of its elements.  The left margin is respected.
  */
-export function vcat(docs: Array<Doc | string>): Doc {
-  return new VerticalDoc(docs.map(toDoc));
-}
+export const vcat = (docs: Array<Doc | string>): Doc =>
+  new VerticalDoc(docs.map(toDoc));
 
 /**
  * Arranges `docs` to be rendered vertically with a newline at the end of each of its elements.  The left margin is set to the offset of the current line which is applied to all elements in `docs`.
  */
-export function indent(docs: Array<Doc | string>): Doc {
-  return new IndentDoc(docs.map(toDoc));
-}
+export const indent = (docs: Array<Doc | string>): Doc =>
+  new IndentDoc(docs.map(toDoc));
 
-export function hsep(
+export const hsep = (
   docs: Array<Doc | string>,
   sep: Doc | string = space,
-): Doc {
+): Doc => {
   if (docs.length === 0) {
     return empty;
   } else {
@@ -150,9 +143,9 @@ export function hsep(
     const [theFirst, ...allButTheFirst] = docDocs;
     return allButTheFirst.reduce((a, b) => a.pp(b, sep), theFirst);
   }
-}
+};
 
-export function hcat(docs: Array<Doc | string>): Doc {
+export const hcat = (docs: Array<Doc | string>): Doc => {
   if (docs.length === 0) {
     return empty;
   } else {
@@ -164,19 +157,18 @@ export function hcat(docs: Array<Doc | string>): Doc {
       return docDocs.slice(1).reduce((a, b) => a.p(b), docDocs[0]);
     }
   }
-}
+};
 
 /**
  *  Nests from the left margin by `offset` spaces.
  */
-export function nest(offset: number, doc: Doc | string): Doc {
-  return new NestDoc(offset, toDoc(doc));
-}
+export const nest = (offset: number, doc: Doc | string): Doc =>
+  new NestDoc(offset, toDoc(doc));
 
-export function punctuate(
+export const punctuate = (
   separator: Doc | string,
   docs: Array<Doc | string>,
-): Array<Doc> {
+): Array<Doc> => {
   const last = docs.length;
   const docDocs = docs.map(toDoc);
 
@@ -193,7 +185,7 @@ export function punctuate(
 
     return result;
   }
-}
+};
 
 /**
  * Joins `docs` together placing `separator` between each.  If `lastSeparator` is not undefined then `lastSeparator` is used instead of 
@@ -205,11 +197,11 @@ export function punctuate(
  * join(['a', 'b', 'c'], ', ', ' and ') === 'a, b and c'
  * ```
  */
-export function join(
+export const join = (
   docs: Array<Doc | string>,
   separator: Doc | string = space,
   lastSeparator: Doc | string | undefined = undefined,
-): Doc {
+): Doc => {
   if (docs.length === 0) {
     return blank;
   } else {
@@ -235,12 +227,12 @@ export function join(
 
     return hcat(result);
   }
-}
+};
 
-export function render(
+export const render = (
   doc: Doc,
   writer: Deno.Writer,
-): Promise<void> {
+): Promise<void> => {
   const encoder = new TextEncoder();
 
   function renderVertically(
@@ -318,4 +310,4 @@ export function render(
   }
 
   return renderp(doc, 0, 0, writer).then((_) => {});
-}
+};
