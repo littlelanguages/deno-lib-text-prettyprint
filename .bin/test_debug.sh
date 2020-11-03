@@ -1,7 +1,5 @@
 #!/bin/bash
 
-.bin/build.sh
-
 deno fmt --check
 
 if [[ "$?" != "0" ]]
