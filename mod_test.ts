@@ -1,4 +1,4 @@
-import * as Assert from "https://deno.land/std@0.68.0/testing/asserts.ts";
+import * as Assert from "https://deno.land/std@0.76.0/testing/asserts.ts";
 import * as PP from "./mod.ts";
 
 Deno.test("render blank", () => {
