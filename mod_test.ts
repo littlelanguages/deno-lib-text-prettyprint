@@ -124,20 +124,20 @@ Deno.test("render nest", () => {
   assertRenderEquals(PP.nest(2, content), "  hello\n  to\n  the\n  world");
 
   assertRenderEquals(
-    PP.text("a").p(PP.nest(2, content)),
+    PP.p(PP.text("a"), PP.nest(2, content)),
     "a hello\n  to\n  the\n  world",
   );
   assertRenderEquals(
-    PP.text("ab").p(PP.nest(2, content)),
+    PP.p(PP.text("ab"), PP.nest(2, content)),
     "abhello\n  to\n  the\n  world",
   );
   assertRenderEquals(
-    PP.text("abc").p(PP.nest(2, content)),
+    PP.p(PP.text("abc"), PP.nest(2, content)),
     "abchello\n  to\n  the\n  world",
   );
 
   assertRenderEquals(
-    PP.text("abc").p(PP.nest(10, "xyz")),
+    PP.p(PP.text("abc"), PP.nest(10, "xyz")),
     "abc       xyz",
   );
 
@@ -149,7 +149,7 @@ Deno.test("render nest", () => {
   const doc = PP.nest(
     4,
     PP.vcat(
-      cmds.flatMap((cmd) => PP.text(cmd.name).p(PP.nest(20, cmd.help))),
+      cmds.flatMap((cmd) => PP.p(PP.text(cmd.name), PP.nest(20, cmd.help))),
     ),
   );
 

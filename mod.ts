@@ -1,95 +1,65 @@
 /**
- * The abstract class of documents.  This class is specialised into specific concrete classes to capture document composition.
+ * The structure used to represent a document
  */
-export abstract class Doc {
-  /**
-   * Equalivalent to `hcat([this, d])`.
-   */
-  p(d: Doc | string): Doc {
-    return new PlusDoc(this, toDoc(d));
-  }
+export type Doc =
+  | EmptyDoc
+  | VerticalDoc
+  | IndentDoc
+  | TextDoc
+  | PlusDoc
+  | PlusPlusDoc
+  | NestDoc;
 
-  /**
-   * Equalivalent to `hsep([this, d], sep)` with `sep` defaulting to a space (" ").
-   */
-  pp(d: Doc | string, sep: Doc | string = space): Doc {
-    return new PlusPlusDoc(this, toDoc(sep), toDoc(d));
-  }
-}
+type EmptyDoc = {
+  tag: "EmptyDoc";
+};
 
-class EmptyDoc extends Doc {}
-
-class VerticalDoc extends Doc {
+type VerticalDoc = {
+  tag: "VerticalDoc";
   docs: Array<Doc>;
+};
 
-  constructor(docs: Array<Doc>) {
-    super();
-    this.docs = docs;
-  }
-}
-
-class IndentDoc extends Doc {
+type IndentDoc = {
+  tag: "IndentDoc";
   docs: Array<Doc>;
+};
 
-  constructor(docs: Array<Doc>) {
-    super();
-    this.docs = docs;
-  }
-}
-
-class TextDoc extends Doc {
+type TextDoc = {
+  tag: "TextDoc";
   text: string;
+};
 
-  constructor(text: string) {
-    super();
-    this.text = text;
-  }
-}
-
-class PlusDoc extends Doc {
+type PlusDoc = {
+  tag: "PlusDoc";
   l: Doc;
   r: Doc;
+};
 
-  constructor(l: Doc, r: Doc) {
-    super();
-    this.l = l;
-    this.r = r;
-  }
-}
-
-class PlusPlusDoc extends Doc {
+type PlusPlusDoc = {
+  tag: "PlusPlusDoc";
   l: Doc;
   sep: Doc;
   r: Doc;
+};
 
-  constructor(l: Doc, sep: Doc, r: Doc) {
-    super();
-    this.l = l;
-    this.sep = sep;
-    this.r = r;
-  }
-}
-
-class NestDoc extends Doc {
+type NestDoc = {
+  tag: "NestDoc";
   offset: number;
   doc: Doc;
-
-  constructor(offset: number, doc: Doc) {
-    super();
-    this.offset = offset;
-    this.doc = doc;
-  }
-}
+};
 
 /**
  * A document composed of the literal string `t`.
  */
-export const text = (t: string): Doc => new TextDoc(t);
+export const text = (t: string): Doc => ({
+  tag: "TextDoc",
+  text: t,
+});
 
 /**
  * An empty document.  
  */
-export const empty: Doc = new EmptyDoc();
+export const empty: Doc = { tag: "EmptyDoc" };
 
 /**
  * A document composed of "".
@@ -112,19 +82,48 @@ export const space: Doc = text(" ");
 export const number = (n: number): Doc => text("" + n);
 
 const toDoc = (doc: Doc | string): Doc =>
-  (doc instanceof Doc) ? doc : text(doc);
+  (doc instanceof Object) ? doc : text(doc);
 
 /**
  * Arranges `docs` to be rendered vertically with a newline at the end of each of its elements.  The left margin is respected.
  */
-export const vcat = (docs: Array<Doc | string>): Doc =>
-  new VerticalDoc(docs.map(toDoc));
+export const vcat = (docs: Array<Doc | string>): Doc => ({
+  tag: "VerticalDoc",
+  docs: (docs.map(toDoc)),
+});
 
 /**
  * Arranges `docs` to be rendered vertically with a newline at the end of each of its elements.  The left margin is set to the offset of the current line which is applied to all elements in `docs`.
  */
-export const indent = (docs: Array<Doc | string>): Doc =>
-  new IndentDoc(docs.map(toDoc));
+export const indent = (docs: Array<Doc | string>): Doc => ({
+  tag: "IndentDoc",
+  docs: (docs.map(toDoc)),
+});
+
+/**
+ * Combines `l` and `r` horizontally without a separator between them.
+ */
+export const p = (l: Doc, r: Doc): Doc =>
+  l.tag == "EmptyDoc" ? r : ({ tag: "PlusDoc", l, r });
+
+/**
+ * Combines `l` and `r` horizontally with `sep` as the separator between them.
+ */
+export const pp = (l: Doc, r: Doc, sep: Doc | string = space): Doc =>
+  sep === ""
+    ? pp(l, r, blank)
+    : sep instanceof Object
+    ? (sep.tag === "EmptyDoc"
+      ? p(l, r)
+      : sep.tag === "TextDoc" && sep.text === ""
+      ? p(l, r)
+      : {
+        tag: "PlusPlusDoc",
+        l,
+        sep,
+        r,
+      })
+    : pp(l, r, toDoc(sep));
 
 export const hsep = (
   docs: Array<Doc | string>,
@@ -141,7 +140,7 @@ export const hsep = (
 
     // oh the ES6 gorgeousness! https://stackoverflow.com/a/59411548/761388
     const [theFirst, ...allButTheFirst] = docDocs;
-    return allButTheFirst.reduce((a, b) => a.pp(b, sep), theFirst);
+    return allButTheFirst.reduce((a, b) => pp(a, b, sep), theFirst);
   }
 };
 
@@ -154,7 +153,7 @@ export const hcat = (docs: Array<Doc | string>): Doc => {
     if (docDocs.length === 1) {
       return docDocs[0];
     } else {
-      return docDocs.slice(1).reduce((a, b) => a.p(b), docDocs[0]);
+      return docDocs.slice(1).reduce((a, b) => p(a, b), docDocs[0]);
     }
   }
 };
@@ -162,8 +161,11 @@ export const hcat = (docs: Array<Doc | string>): Doc => {
 /**
  *  Nests from the left margin by `offset` spaces.
  */
-export const nest = (offset: number, doc: Doc | string): Doc =>
-  new NestDoc(offset, toDoc(doc));
+export const nest = (offset: number, doc: Doc | string): Doc => ({
+  tag: "NestDoc",
+  offset,
+  doc: toDoc(doc),
+});
 
 export const punctuate = (
   separator: Doc | string,
@@ -179,7 +181,7 @@ export const punctuate = (
 
     const docSeparator = toDoc(separator);
     for (let lp = 0; lp < last - 1; lp += 1) {
-      result.push(docDocs[lp].p(docSeparator));
+      result.push(p(docDocs[lp], docSeparator));
     }
     result.push(docDocs[last - 1]);
 
@@ -241,7 +243,7 @@ export const render = (
     offset: number,
   ): Promise<number> {
     let off = Promise.resolve(offset);
-    const newDocs = docs.filter((line) => !(line instanceof EmptyDoc));
+    const newDocs = docs.filter((line) => line.tag !== "EmptyDoc");
 
     newDocs.forEach(
       (line, idx) => {
@@ -269,31 +271,31 @@ export const render = (
     offset: number,
     writer: Deno.Writer,
   ): Promise<number> {
-    if (d instanceof EmptyDoc) {
+    if (d.tag === "EmptyDoc") {
       return Promise.resolve(offset);
-    } else if (d instanceof TextDoc) {
+    } else if (d.tag === "TextDoc") {
       return writer.write(encoder.encode(d.text)).then((_) =>
         offset + d.text.length
       );
-    } else if (d instanceof VerticalDoc) {
+    } else if (d.tag === "VerticalDoc") {
       return renderVertically(d.docs, leftMargin, offset);
-    } else if (d instanceof PlusDoc) {
+    } else if (d.tag === "PlusDoc") {
       return renderp(d.l, leftMargin, offset, writer).then((off) =>
         renderp(d.r, leftMargin, off, writer)
       );
-    } else if (d instanceof PlusPlusDoc) {
-      if (d.l === empty && d.r === empty) {
+    } else if (d.tag === "PlusPlusDoc") {
+      if (d.l.tag === "EmptyDoc" && d.r.tag === "EmptyDoc") {
         return Promise.resolve(offset);
-      } else if (d.l === empty) {
+      } else if (d.l.tag === "EmptyDoc") {
         return renderp(d.r, leftMargin, offset, writer);
-      } else if (d.r === empty) {
+      } else if (d.r.tag === "EmptyDoc") {
         return renderp(d.l, leftMargin, offset, writer);
       } else {
         return renderp(d.l, leftMargin, offset, writer).then((off) =>
           renderp(d.sep, leftMargin, off, writer)
         ).then((off) => renderp(d.r, leftMargin, off, writer));
       }
-    } else if (d instanceof NestDoc) {
+    } else if (d.tag === "NestDoc") {
       const newLeftMargin = leftMargin + d.offset;
 
       const spaces = (offset < newLeftMargin)
@@ -302,7 +304,7 @@ export const render = (
       return writer.write(encoder.encode(spaces)).then((_) =>
         renderp(d.doc, newLeftMargin, newLeftMargin, writer)
       );
-    } else if (d instanceof IndentDoc) {
+    } else if (d.tag === "IndentDoc") {
       return renderVertically(d.docs, offset, offset);
     } else {
       throw d;
