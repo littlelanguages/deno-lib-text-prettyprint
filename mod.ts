@@ -237,11 +237,11 @@ export const render = (
 ): Promise<void> => {
   const encoder = new TextEncoder();
 
-  function renderVertically(
+  const renderVertically = (
     docs: Array<Doc>,
     leftMargin: number,
     offset: number,
-  ): Promise<number> {
+  ): Promise<number> => {
     let off = Promise.resolve(offset);
     const newDocs = docs.filter((line) => line.tag !== "EmptyDoc");
 
@@ -263,14 +263,14 @@ export const render = (
     );
 
     return off;
-  }
+  };
 
-  function renderp(
+  const renderp = (
     d: Doc,
     leftMargin: number,
     offset: number,
     writer: Deno.Writer,
-  ): Promise<number> {
+  ): Promise<number> => {
     if (d.tag === "EmptyDoc") {
       return Promise.resolve(offset);
     } else if (d.tag === "TextDoc") {
@@ -309,7 +309,7 @@ export const render = (
     } else {
       throw d;
     }
-  }
+  };
 
   return renderp(doc, 0, 0, writer).then((_) => {});
 };
